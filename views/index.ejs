@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="css/uikit.min.css">
     <script src="js/uikit.min.js"></script>
     <script src="js/uikit-icons.min.js"></script>
+    <script src="js/index.js"></script>
   </head>
   <body>
 
@@ -12,15 +13,36 @@
     <div class="uk-container">
       <div class="uk-card uk-card-body">
         <h3 class="uk-card-title">파일 목록</h3>
+        <a href="#upload-modal" uk-toggle uk-icon="icon: cloud-upload"></a>
+        <div id="upload-modal" uk-modal>
+          <div class="uk-modal-dialog uk-modal-body uk-text-center">
+            <form action="/upload/create" id="upload-form" method="post" enctype="multipart/form-data">
+              <h2 class="uk-modal-title">업로드</h2>
+              <span class="uk-text-middle">여기로 파일을 드래그 하거나 </span>
+              <div uk-form-custom>
+                  <input type="file" name="file_input" id="file-input" onchange="updateFileList()" multiple>
+                  <span class="uk-link">클릭하여</span>
+              </div>
+              <span class="uk-text-middle"> 파일을 업로드 하세요.</span>
+              <ul id="file-input-list" class="uk-nav uk-dropdown-nav">
+
+              </ul>
+              <div class="uk-text-right" style="margin-top: 32px;">
+                  <button class="uk-button uk-button-default uk-modal-close" type="button">취소</button>
+                  <button class="uk-button uk-button-primary" type="submit">업로드</button>
+              </div>
+            </form>
+          </div>
+        </div>
         <ul class="uk-list uk-list-divider">
           <% for(var i = 0; i < data.files.length; i++) { %>
             <li>
               <p><%= data.files[i] %></p>
             </li>
             <div uk-dropdown="mode: click">
-              <ul class="uk-nav uk-dropdown-nav"></ul>
-              <li><a href="<%= '/download/' + data.files[i] %>" >다운로드</a></li>
-              <li><a href="<%= '/delete/' + data.files[i] %>" >삭제</a></li>
+              <ul class="uk-nav uk-dropdown-nav">
+                <li><a href="<%= '/download/' + data.files[i] %>" >다운로드</a></li>
+                <li><a href="<%= '/delete/' + data.files[i] %>" >삭제</a></li>
               </ul>
             </div>
           <% } %>

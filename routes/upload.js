@@ -14,17 +14,7 @@ var storage = multer.diskStorage({
 
 var upload = multer({ storage: storage });
 
-router.get("/show", function(req, res, next) {
-    res.render('upload');
-});
-
-router.post('/create', upload.single('FileInput'), function(req, res, next) {
-    var file = req.file;
-    var result = {
-        FileName: file.originalname,
-        Size: file.size,
-    }
-
+router.post('/create', upload.any('file_input'), function(req, res, next) {
     res.redirect('/');
 });
 

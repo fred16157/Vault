@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vault</title>
+    <link rel="stylesheet" href="css/uikit.min.css">
+    <script src="js/uikit.min.js"></script>
+    <script src="js/uikit-icons.min.js"></script>
+  </head>
+  <body>
+
+    </div>
+    <div class="uk-container">
+      <div class="uk-card uk-card-body">
+        <h3 class="uk-card-title">파일 목록</h3>
+        <ul class="uk-list uk-list-divider">
+          <% for(var i = 0; i < data.files.length; i++) { %>
+            <li>
+              <p><%= data.files[i] %></p>
+            </li>
+            <div uk-dropdown="mode: click">
+              <ul class="uk-nav uk-dropdown-nav"></ul>
+              <li><a href="<%= '/download/' + data.files[i] %>" >다운로드</a></li>
+              <li><a href="<%= '/delete/' + data.files[i] %>" >삭제</a></li>
+              </ul>
+            </div>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

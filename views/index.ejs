@@ -8,18 +8,26 @@
     <script src="js/index.js"></script>
   </head>
   <body>
-
-    </div>
     <div class="uk-container">
       <div class="uk-card uk-card-body">
-        <h3 class="uk-card-title">파일 목록</h3>
+        <h3 class="uk-card-title">파일 목록 <h5>위치 - <%= position %></h5></h3>
         <a href="#upload-modal" uk-toggle uk-icon="icon: cloud-upload"></a>
+        <a uk-toggle uk-icon="icon: folder"></a>
+        <div uk-dropdown="mode: click">
+          <form action="/mkdir" method="post" onsubmit="makeDir()">
+            <div uk-form-custom="target: true">
+              <input class="uk-input uk-form-width-medium" name="path" id="dir-name-input" type="text" placeholder="폴더 이름">
+            </div>
+            <button class="uk-button uk-button-primary" type="submit">만들기</button>
+          </form>
+        </div>
         <div id="upload-modal" uk-modal>
           <div class="uk-modal-dialog uk-modal-body uk-text-center">
             <form action="/upload/create" id="upload-form" method="post" enctype="multipart/form-data">
               <h2 class="uk-modal-title">업로드</h2>
               <span class="uk-text-middle">여기로 파일을 드래그 하거나 </span>
               <div uk-form-custom>
+                  <input style="display: none;" name="path" id="path-input">
                   <input type="file" name="file_input" id="file-input" onchange="updateFileList()" multiple>
                   <span class="uk-link">클릭하여</span>
               </div>
@@ -35,16 +43,28 @@
           </div>
         </div>
         <ul class="uk-list uk-list-divider">
-          <% for(var i = 0; i < data.files.length; i++) { %>
+          <% if(position !== "/") { %>
             <li>
-              <p><%= data.files[i] %></p>
+              <a href="<%= "/back/?path=" + position.slice(0, position.length - 1)%>"  uk-icon="icon: chevron-left">상위 폴더</a>
+            </li>
+          <% } %>
+          <% for(var i = 0; i < data.length; i++) { 
+            if(data[i].isFolder) {%>
+              <li class="uk-visible-toggle">
+                <a href="<%= "?pos=" + position + data[i].name %>"><%= data[i].name %></a>
+                <a class="uk-hidden-hover" href="<%= "deletedir/?pos=" + position + data[i].name %>" uk-icon="close" ></a>
+              </li>
+            <% } else { %>
+            <li>
+              <p><%= data[i].name %></p>
             </li>
             <div uk-dropdown="mode: click">
               <ul class="uk-nav uk-dropdown-nav">
-                <li><a href="<%= '/download/' + data.files[i] %>" >다운로드</a></li>
-                <li><a href="<%= '/delete/' + data.files[i] %>" >삭제</a></li>
+                <li><a href="<%= '/download/?pos=' + position + data[i].name %>" >다운로드</a></li>
+                <li><a href="<%= '/delete/?pos=' + position + data[i].name %>" >삭제</a></li>
               </ul>
             </div>
+            <% } %>
           <% } %>
         </ul>
       </div>

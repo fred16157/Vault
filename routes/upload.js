@@ -5,6 +5,7 @@ var fs = require('fs');
 var path = require('path');
 
 router.post('/create', function (req, res, next) {
+    if(!req.session.username) return res.redirect('/login');
     var singleFile;
     var form = new multiparty.Form();
 

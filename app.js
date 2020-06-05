@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var session = require('express-session');
+var fs = require('fs');
 
 var indexRouter = require('./routes/index');
 var uploadRouter = require('./routes/upload');
@@ -18,6 +20,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({
+  secret: 'vault-session!@$#*',
+  resave: false,
+  saveUninitialized: true
+ }));
 
 app.use('/', indexRouter);
 app.use('/upload', uploadRouter);
@@ -26,6 +33,8 @@ app.use('/upload', uploadRouter);
 app.use(function(req, res, next) {
   next(createError(404));
 });
+
+if(!fs.existsSync('users.json')) fs.writeFileSync('users.json', "[]");
 
 // error handler
 app.use(function(err, req, res, next) {

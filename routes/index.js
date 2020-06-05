@@ -36,12 +36,75 @@ function GetDirectoryInfo(pos) {
   return filelist;
 }
 
+router.get('/login', function(req, res, next) {
+  var fs = require('fs');
+  if(req.query.retry === true)
+  {
+    res.render('login', {isRetry: true});
+  }
+  else 
+  {
+    res.render('login', {isRetry: false});
+  }
+});
+
+router.post('/login', function(req, res, next) {
+  var fs = require('fs');
+  var users = require('../users.json');
+  var crypto = require('crypto');
+  var user = users.find(user => user.username === req.body.username);
+  var session = req.session;
+  if(!user) return res.redirect('/login?retry=true');
+  crypto.pbkdf2(req.body.password, "bA+VjJVGTmBHLAV/U6USzkDsLeOW9feqW1HuRzK7lOlMn+0JVhSCE9s1JnTggklKGHSYLmv1TIEnyNAqBBhecA==", 100000, 64, 'sha512', (err, key) => {
+    if(user.password === key.toString('base64'))
+    {
+      session.username = user.username;
+      return res.redirect('/');
+    } 
+    else 
+    {
+      return res.redirect('/login?retry=true');
+    }
+  });
+});
+
+router.get('/logout', function(req, res, next) {
+  var fs = require('fs');
+  if(req.session) req.session.destroy(() => res.redirect('/login'));
+});
+
+router.get('/signup', function(req, res, next) {
+  var fs = require('fs');
+  if(req.query.retry === true)
+  {
+    res.render('signup', {isRetry: true});
+  }
+  else 
+  {
+    res.render('signup', {isRetry: false});
+  }
+});
+
+router.post('/signup', function(req, res, next) {
+  var fs = require('fs');
+  var users = require('../users.json');
+  if(users.find(user => user.username === req.body.username) !== undefined) res.redirect('/signup?retry=true');
+  var crypto = require('crypto');
+  crypto.pbkdf2(req.body.password, "bA+VjJVGTmBHLAV/U6USzkDsLeOW9feqW1HuRzK7lOlMn+0JVhSCE9s1JnTggklKGHSYLmv1TIEnyNAqBBhecA==", 100000, 64, 'sha512', (err, key) => {
+    users.push({ username: req.body.username, password: key.toString('base64') });
+    fs.writeFileSync('users.json', JSON.stringify(users));
+    res.redirect('/login');
+  });
+});
+
 router.get('/', function(req, res, next) {
+  if(!req.session.username) return res.redirect('/login');
   if(req.query.pos == undefined || req.query.pos == "/") req.query.pos = "";
-  res.render('index', {data: GetDirectoryInfo(req.query.pos), position: req.query.pos + "/"});
+  res.render('index', {data: GetDirectoryInfo(req.query.pos), position: req.query.pos + "/", username: req.session.username});
 });
 
 router.get('/download/', function(req, res) {
+  if(!req.session.username) return res.redirect('/login');
   var path = require('path');
   var file = req.query.pos;
   var filepath = path.join(__dirname, '../storage/' + file);
@@ -49,6 +112,7 @@ router.get('/download/', function(req, res) {
 });
 
 router.get('/back/', function(req, res) {
+  if(!req.session.username) return res.redirect('/login');
   var path = require('path');
   var paths = req.query.path.split('/');
   var newpath = "/";
@@ -62,6 +126,7 @@ router.get('/back/', function(req, res) {
 });
 
 router.post('/mkdir/', function(req, res) {
+  if(!req.session.username) return res.redirect('/login');
   var fs = require('fs');
   var path = require('path');
   
@@ -70,11 +135,13 @@ router.post('/mkdir/', function(req, res) {
 });
 
 router.post('/rename/', function(req, res) {
+  if(!req.session.username) return res.redirect('/login');
   var fs = require('fs');
   fs.renameSync(req.query.path, req.query.newpath);
 });
 
 router.get('/delete/', function(req, res) {
+  if(!req.session.username) return res.redirect('/login');
   var fs = require('fs');
   var path = require('path');
   var file = req.query.pos;
@@ -83,6 +150,7 @@ router.get('/delete/', function(req, res) {
 });
 
 router.get('/deletedir/', function(req, res) {
+  if(!req.session.username) return res.redirect('/login');
   var fs = require('fs');
   var path = require('path');
   var pos = req.query.pos;
@@ -90,19 +158,19 @@ router.get('/deletedir/', function(req, res) {
   res.redirect(req.get('referer'));
 });
 
-var deleteFolderRecursive = function(path) {
+var deleteFolderRecursive = function(pos) {
   var fs = require('fs');
   var path = require('path');
-  if (fs.existsSync(path)) {
-    fs.readdirSync(path).forEach((file, index) => {
-      var curPath = path.join(path, file);
+  if (fs.existsSync(pos)) {
+    fs.readdirSync(pos).forEach((file, index) => {
+      var curPath = path.join(pos, file);
       if (fs.lstatSync(curPath).isDirectory()) { // recurse
         deleteFolderRecursive(curPath);
       } else { // delete file
         fs.unlinkSync(curPath);
       }
     });
-    fs.rmdirSync(path);
+    fs.rmdirSync(pos);
   }
 };
 

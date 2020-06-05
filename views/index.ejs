@@ -9,8 +9,9 @@
   </head>
   <body>
     <div class="uk-container">
-      <div class="uk-card uk-card-body">
-        <h3 class="uk-card-title">파일 목록 <h5>위치 - <%= position %></h5></h3>
+      <div class="uk-card uk-card-body .uk-box-shadow-large">
+        <h3 class="uk-card-title">파일 목록<span class="uk-h5"> - 계정 <%= username %>(으)로 접근중</span> <h5>위치 - <%= position %> </h5></h3>
+        <p><a class="uk-align-right" href="/logout">로그아웃</a></p>
         <a href="#upload-modal" uk-toggle uk-icon="icon: cloud-upload"></a>
         <a uk-toggle uk-icon="icon: folder"></a>
         <div uk-dropdown="mode: click">

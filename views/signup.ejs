@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Vault 회원가입</title>
+        <link rel="stylesheet" href="css/uikit.min.css">
+        <script src="js/uikit.min.js"></script>
+        <script src="js/uikit-icons.min.js"></script>
+        <script src="js/index.js"></script>
+    </head>
+    <body>
+        <div class="uk-container uk-margin-auto-vertical" style="max-width: 500px" >
+            <div class="uk-card uk-card-body">
+                <h3>회원가입</h3>
+                <% if(isRetry) { %>
+                    <div class="uk-alert-danger" uk-alert>
+                        <a class="uk-alert-close" uk-close></a>
+                        <p>회원가입에 실패했습니다. 제시한 이름을 가진 회원이 이미 있습니다.</p>
+                    </div>
+                <% } %>
+                <form action="/signup" method="POST">
+                    <input class="uk-input" placeholder="계정 이름" type="text" name="username">
+                    <input class="uk-input" placeholder="비밀번호"type="password" name="password">
+                    <div style="margin-top: 20px;">
+                        <button class="uk-button uk-button-primary uk-align-right" type="submit">가입</button>
+                    
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

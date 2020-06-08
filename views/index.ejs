@@ -34,7 +34,6 @@
               </div>
               <span class="uk-text-middle"> 파일을 업로드 하세요.</span>
               <ul id="file-input-list" class="uk-nav uk-dropdown-nav">
-
               </ul>
               <div class="uk-text-right" style="margin-top: 32px;">
                   <button class="uk-button uk-button-default uk-modal-close" type="button">취소</button>
@@ -54,6 +53,16 @@
               <li class="uk-visible-toggle">
                 <a href="<%= "?pos=" + position + data[i].name %>"><%= data[i].name %></a>
                 <a class="uk-hidden-hover" href="<%= "deletedir/?pos=" + position + data[i].name %>" uk-icon="close" ></a>
+                <a class="uk-hidden-hover" uk-icon="pencil" ></a>
+                <div uk-dropdown="mode: click">
+                    <form action="/rename" method="post" onsubmit="rename()">
+                      <div uk-form-custom>
+                        <input class="uk-input uk-form-width-medium" name="newname" id="rename-input" type="text" placeholder="이름 변경..." value="">
+                        <input style="display: none;" name="path" id="remame-path" type="text" value="<%= position + data[i].name %>">
+                      </div>
+                      <button class="uk-button uk-button-primary" type="submit">변경</button>
+                    </form>
+                  </div>
               </li>
             <% } else { %>
             <li>
@@ -62,6 +71,18 @@
             <div uk-dropdown="mode: click">
               <ul class="uk-nav uk-dropdown-nav">
                 <li><a href="<%= '/download/?pos=' + position + data[i].name %>" >다운로드</a></li>
+                <li>
+                  <a uk-toggle>이름 변경</a>
+                  <div uk-dropdown="mode: click">
+                    <form action="/rename" method="post" onsubmit="rename()">
+                      <div uk-form-custom>
+                        <input class="uk-input uk-form-width-medium" name="newname" id="rename-input" type="text" placeholder="이름 변경..." value="">
+                        <input style="display: none;" name="path" id="remame-path" type="text" value="<%= position + data[i].name %>">
+                      </div>
+                      <button class="uk-button uk-button-primary" type="submit">변경</button>
+                    </form>
+                  </div>
+                </li>
                 <li><a href="<%= '/delete/?pos=' + position + data[i].name %>" >삭제</a></li>
               </ul>
             </div>

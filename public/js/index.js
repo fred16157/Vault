@@ -36,6 +36,15 @@ var makeDir = (e) => {
     } 
     else {
         document.getElementById('dir-name-input').value = pos + "/" + document.getElementById('dir-name-input').value;    
+    }  
+}
+
+var rename = (e) => {
+    if(document.getElementById('rename-input').value == undefined) e.preventDefault();
+    if(pos == null || pos == undefined) {
+        document.getElementById('rename-input').value = "/" + document.getElementById('rename-input').value;
+    } 
+    else {
+        document.getElementById('rename-input').value = pos + "/" + document.getElementById('rename-input').value;    
     }
-   
 }

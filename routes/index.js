@@ -88,7 +88,7 @@ router.get('/signup', function(req, res, next) {
 router.post('/signup', function(req, res, next) {
   var fs = require('fs');
   var users = require('../users.json');
-  if(users.find(user => user.username === req.body.username) !== undefined) res.redirect('/signup?retry=true');
+  if(users.find(user => user.username === req.body.username)) return res.redirect('/signup?retry=true');
   var crypto = require('crypto');
   crypto.pbkdf2(req.body.password, "bA+VjJVGTmBHLAV/U6USzkDsLeOW9feqW1HuRzK7lOlMn+0JVhSCE9s1JnTggklKGHSYLmv1TIEnyNAqBBhecA==", 100000, 64, 'sha512', (err, key) => {
     users.push({ username: req.body.username, password: key.toString('base64') });
@@ -103,7 +103,7 @@ router.get('/', function(req, res, next) {
   res.render('index', {data: GetDirectoryInfo(req.query.pos), position: req.query.pos + "/", username: req.session.username});
 });
 
-router.get('/download/', function(req, res) {
+router.get('/download/', function(req, res, next) {
   if(!req.session.username) return res.redirect('/login');
   var path = require('path');
   var file = req.query.pos;
@@ -111,7 +111,7 @@ router.get('/download/', function(req, res) {
   res.download(filepath);
 });
 
-router.get('/back/', function(req, res) {
+router.get('/back/', function(req, res, next) {
   if(!req.session.username) return res.redirect('/login');
   var path = require('path');
   var paths = req.query.path.split('/');
@@ -125,7 +125,7 @@ router.get('/back/', function(req, res) {
   else res.redirect("/?pos=" + path.normalize(newpath).replace('\\', '/'));
 });
 
-router.post('/mkdir/', function(req, res) {
+router.post('/mkdir/', function(req, res, next) {
   if(!req.session.username) return res.redirect('/login');
   var fs = require('fs');
   var path = require('path');
@@ -134,22 +134,24 @@ router.post('/mkdir/', function(req, res) {
   res.redirect(req.get('referer'));
 });
 
-router.post('/rename/', function(req, res) {
+router.post('/rename/', function(req, res, next) {
   if(!req.session.username) return res.redirect('/login');
   var fs = require('fs');
-  fs.renameSync(req.query.path, req.query.newpath);
+  var path = require('path');
+  fs.renameSync(path.join(__dirname, "../storage" + req.body.path), path.join(__dirname, "../storage" + req.body.newname));
+  res.redirect(req.get('referer'));
 });
 
-router.get('/delete/', function(req, res) {
+router.get('/delete/', function(req, res, next) {
   if(!req.session.username) return res.redirect('/login');
   var fs = require('fs');
   var path = require('path');
   var file = req.query.pos;
   fs.unlinkSync(path.join(__dirname, "../storage/" + file));
-  res.redirect('/');
+  res.redirect(req.get('referer'));
 });
 
-router.get('/deletedir/', function(req, res) {
+router.get('/deletedir/', function(req, res, next) {
   if(!req.session.username) return res.redirect('/login');
   var fs = require('fs');
   var path = require('path');

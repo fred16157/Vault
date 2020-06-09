@@ -48,28 +48,9 @@ router.get('/login', function(req, res, next) {
   }
 });
 
-router.post('/login', function(req, res, next) {
-  var fs = require('fs');
-  var users = require('../users.json');
-  var crypto = require('crypto');
-  var user = users.find(user => user.username === req.body.username);
-  var session = req.session;
-  if(!user) return res.redirect('/login?retry=true');
-  crypto.pbkdf2(req.body.password, "bA+VjJVGTmBHLAV/U6USzkDsLeOW9feqW1HuRzK7lOlMn+0JVhSCE9s1JnTggklKGHSYLmv1TIEnyNAqBBhecA==", 100000, 64, 'sha512', (err, key) => {
-    if(user.password === key.toString('base64'))
-    {
-      session.username = user.username;
-      return res.redirect('/');
-    } 
-    else 
-    {
-      return res.redirect('/login?retry=true');
-    }
-  });
-});
+
 
 router.get('/logout', function(req, res, next) {
-  var fs = require('fs');
   if(req.session) req.session.destroy(() => res.redirect('/login'));
 });
 
@@ -97,9 +78,28 @@ router.post('/signup', function(req, res, next) {
   });
 });
 
+router.post('/login', function(req, res, next) {
+  var fs = require('fs');
+  var users = require('../users.json');
+  var crypto = require('crypto');
+  var user = users.find(user => user.username === req.body.username);
+  var session = req.session;
+  if(!user) return res.redirect('/login?retry=true');
+  crypto.pbkdf2(req.body.password, "bA+VjJVGTmBHLAV/U6USzkDsLeOW9feqW1HuRzK7lOlMn+0JVhSCE9s1JnTggklKGHSYLmv1TIEnyNAqBBhecA==", 100000, 64, 'sha512', (err, key) => {
+    if(user.password === key.toString('base64')) {
+      session.username = user.username;
+      return res.redirect('/');
+    } 
+    else {
+      return res.redirect('/login?retry=true');
+    }
+  });
+});
+
 router.get('/', function(req, res, next) {
   if(!req.session.username) return res.redirect('/login');
   if(req.query.pos == undefined || req.query.pos == "/") req.query.pos = "";
+  if(req.query.pos.startsWith("../")) return res.redirect('/');
   res.render('index', {data: GetDirectoryInfo(req.query.pos), position: req.query.pos + "/", username: req.session.username});
 });
 
@@ -129,7 +129,6 @@ router.post('/mkdir/', function(req, res, next) {
   if(!req.session.username) return res.redirect('/login');
   var fs = require('fs');
   var path = require('path');
-  
   fs.mkdirSync(path.join(__dirname, "../storage" + req.body.path), {recursive: true});
   res.redirect(req.get('referer'));
 });

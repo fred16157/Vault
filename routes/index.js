@@ -1,6 +1,13 @@
 var express = require('express');
 var router = express.Router();
 
+const authMiddleware = require('./auth');
+const { token } = require('morgan');
+router.use('/mkdir', authMiddleware);
+router.use('/download', authMiddleware);
+router.use('/delete', authMiddleware);
+router.use('/deletedir', authMiddleware);
+router.use('/rename', authMiddleware);
 function GetDirectoryInfo(pos) {
   var fs = require('fs');
   var filelist = [];
@@ -82,13 +89,25 @@ router.post('/login', function(req, res, next) {
   var fs = require('fs');
   var users = require('../users.json');
   var crypto = require('crypto');
+  var jwt = require('jsonwebtoken');
   var user = users.find(user => user.username === req.body.username);
   var session = req.session;
   if(!user) return res.redirect('/login?retry=true');
   crypto.pbkdf2(req.body.password, "bA+VjJVGTmBHLAV/U6USzkDsLeOW9feqW1HuRzK7lOlMn+0JVhSCE9s1JnTggklKGHSYLmv1TIEnyNAqBBhecA==", 100000, 64, 'sha512', (err, key) => {
     if(user.password === key.toString('base64')) {
-      session.username = user.username;
-      return res.redirect('/');
+      jwt.sign({
+        username: user.username
+      },
+      "vault-secret",
+      {
+        expiresIn: '7d',
+        issuer: 'velopert.com',
+        subject: 'userInfo'
+    }, (err, token) => {
+        if (err) return console.log(err);
+        session.token = token;
+        return res.redirect('/');
+    });
     } 
     else {
       return res.redirect('/login?retry=true');
@@ -97,14 +116,18 @@ router.post('/login', function(req, res, next) {
 });
 
 router.get('/', function(req, res, next) {
-  if(!req.session.username) return res.redirect('/login');
+  if(!req.session.token) return res.redirect('/login');
   if(req.query.pos == undefined || req.query.pos == "/") req.query.pos = "";
-  if(req.query.pos.startsWith("../")) return res.redirect('/');
-  res.render('index', {data: GetDirectoryInfo(req.query.pos), position: req.query.pos + "/", username: req.session.username});
+  else if(req.query.pos.startsWith("../")) return res.redirect('/?pos=/');
+  var jwt = require('jsonwebtoken');
+  jwt.verify(req.session.token, "vault-secret", (err, decoded) => {
+    if(err) return res.redirect('/login');
+    res.render('index', {data: GetDirectoryInfo(req.query.pos), position: req.query.pos + "/", username: decoded.username});
+  })
 });
 
 router.get('/download/', function(req, res, next) {
-  if(!req.session.username) return res.redirect('/login');
+  if(!req.session.token) return res.redirect('/login');
   var path = require('path');
   var file = req.query.pos;
   var filepath = path.join(__dirname, '../storage/' + file);
@@ -112,7 +135,7 @@ router.get('/download/', function(req, res, next) {
 });
 
 router.get('/back/', function(req, res, next) {
-  if(!req.session.username) return res.redirect('/login');
+  if(!req.session.token) return res.redirect('/login');
   var path = require('path');
   var paths = req.query.path.split('/');
   var newpath = "/";
@@ -126,7 +149,7 @@ router.get('/back/', function(req, res, next) {
 });
 
 router.post('/mkdir/', function(req, res, next) {
-  if(!req.session.username) return res.redirect('/login');
+  if(!req.session.token) return res.redirect('/login');
   var fs = require('fs');
   var path = require('path');
   fs.mkdirSync(path.join(__dirname, "../storage" + req.body.path), {recursive: true});
@@ -134,7 +157,7 @@ router.post('/mkdir/', function(req, res, next) {
 });
 
 router.post('/rename/', function(req, res, next) {
-  if(!req.session.username) return res.redirect('/login');
+  if(!req.session.token) return res.redirect('/login');
   var fs = require('fs');
   var path = require('path');
   fs.renameSync(path.join(__dirname, "../storage" + req.body.path), path.join(__dirname, "../storage" + req.body.newname));
@@ -142,7 +165,7 @@ router.post('/rename/', function(req, res, next) {
 });
 
 router.get('/delete/', function(req, res, next) {
-  if(!req.session.username) return res.redirect('/login');
+  if(!req.session.token) return res.redirect('/login');
   var fs = require('fs');
   var path = require('path');
   var file = req.query.pos;
@@ -151,7 +174,7 @@ router.get('/delete/', function(req, res, next) {
 });
 
 router.get('/deletedir/', function(req, res, next) {
-  if(!req.session.username) return res.redirect('/login');
+  if(!req.session.token) return res.redirect('/login');
   var fs = require('fs');
   var path = require('path');
   var pos = req.query.pos;

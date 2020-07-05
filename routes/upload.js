@@ -4,8 +4,10 @@ var multiparty = require('multiparty');
 var fs = require('fs');
 var path = require('path');
 
+const authMiddleware = require('./auth');
+router.use('/create', authMiddleware);
+
 router.post('/create', function (req, res, next) {
-    if(!req.session.username) return res.redirect('/login');
     var singleFile;
     var form = new multiparty.Form();
 

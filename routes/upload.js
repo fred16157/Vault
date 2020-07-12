@@ -3,6 +3,7 @@ var router = express.Router();
 var multiparty = require('multiparty');
 var fs = require('fs');
 var path = require('path');
+var { storagePath } = require('../config.json');
 
 const authMiddleware = require('./auth');
 router.use('/create', authMiddleware);
@@ -15,7 +16,7 @@ router.post('/create', function (req, res, next) {
         var fileArry = files.file_input;
 
         for (i = 0; i < fileArry.length; i++) {
-            newPath = path.join(__dirname.replace('routes', '') + "/storage" + fields.path[0]);
+            newPath = path.join(storagePath + fields.path[0]);
             singleFile = fileArry[i];
             newPath += singleFile.originalFilename;
             readAndWriteFile(singleFile, newPath);
@@ -27,7 +28,7 @@ router.post('/create', function (req, res, next) {
 function readAndWriteFile(singleFile, newPath) {
     fs.readFile(singleFile.path, (err, data) => {
         fs.writeFile(newPath, data, (err) => {
-            console.log("File uploaded to  :" + newPath);
+            console.log("File uploaded to: " + newPath);
         });
     });
 }

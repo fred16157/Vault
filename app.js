@@ -11,6 +11,10 @@ var uploadRouter = require('./routes/upload');
 
 var app = express();
 
+if(!fs.existsSync(require('./config.json').storagePath)) {
+  console.log("Wrong path specified to variable storagePath");
+  process.exit(-1);
+}
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
